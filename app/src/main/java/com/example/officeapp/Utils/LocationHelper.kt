@@ -84,7 +84,6 @@ class LocationHelper(private val context: Context) {
                                 REQUEST_CHECK_SETTINGS
                             )
                         }
-
                     } catch (sendEx: IntentSender.SendIntentException) {
                         Log.d("TAG", "Failed to start resolution for location settings")
                         onLocationResult(null)

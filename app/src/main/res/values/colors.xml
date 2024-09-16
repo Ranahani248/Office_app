@@ -5,4 +5,13 @@
     <color name="green">#29BC09</color>
     <color name="red">#E01010</color>
     <color name="yellow">#FFCD19</color>
+    <color name="Dark_Blue">#0A197B</color>
+    <color name="input_background">#FFFFFFFF</color>
+    <color name="Home_Background">#FFFFFFFF</color>
+    <color name="home_dark">#0A197B</color>
+    <color name="home_card">#FFFFFFFF</color>
+    <color name="home_text_icons_white">#FFFFFFFF</color>
+    <color name="home_text_icons_dark_blue">#0A197B</color>
+
+
 </resources>

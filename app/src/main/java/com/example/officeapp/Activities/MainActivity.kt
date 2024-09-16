@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +13,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.officeapp.R
 import com.example.officeapp.Utils.LocationHelper
 import com.example.officeapp.Utils.showCustomToast
+import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
     var locationHelper: LocationHelper? =null ;
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     val maxLatitude = 33.6534625
 
     var fetch: Button? = null;
+    var welcome: TextView? = null;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +35,21 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         fetch =findViewById(R.id.fetch);
+        welcome = findViewById(R.id.welcome)
+
+        val calendar = Calendar.getInstance()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
+
+        // Set the welcome message based on the time of day
+        when (hour) {
+            in 0..5 -> welcome?.text = "Good Night!"
+            in 6..11 -> welcome?.text = "Good Morning!"
+            in 12..16 -> welcome?.text = "Good Afternoon!"
+            in 17..19 -> welcome?.text = "Good Evening!"
+            else -> welcome?.text = "Good Night!"
+        }
+
+
         locationHelper = LocationHelper(this)
 
         fetch?.setOnClickListener() {

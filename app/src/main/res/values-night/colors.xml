@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+        <color name="black">#FF000000</color>
+        <color name="white">#FFFFFFFF</color>
+        <color name="green">#29BC09</color>
+        <color name="red">#E01010</color>
+        <color name="yellow">#FFCD19</color>
+        <color name="Dark_Blue">#0A197B</color>
+        <color name="input_background">#222222</color>
+        <color name="Home_Background">#333333</color>
+        <color name="home_dark">#121A52</color>
+        <color name="home_card">#393939</color>
+        <color name="home_text_icons_white">#CECECE</color>
+        <color name="home_text_icons_dark_blue">#CECECE</color>
+
+
+
+</resources>
