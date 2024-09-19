@@ -10,8 +10,11 @@
     <color name="Home_Background">#FFFFFFFF</color>
     <color name="home_dark">#0A197B</color>
     <color name="home_card">#FFFFFFFF</color>
-    <color name="home_text_icons_white">#FFFFFFFF</color>
-    <color name="home_text_icons_dark_blue">#0A197B</color>
+    <color name="white_on_darkBlue">#FFFFFFFF</color>
+    <color name="darkBlue_to_white">#0A197B</color>
+    <color name="offwhite_to_grey">#E4DFDF</color>
+    <color name="text_black_to_white">#FF000000</color>
+    <color name="home_back_diff">#F1F1F1</color>
 
 
 </resources>

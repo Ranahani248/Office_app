@@ -16,6 +16,15 @@
         android:theme="@style/Theme.OfficeApp"
         tools:targetApi="31">
         <activity
+            android:name=".Activities.LeavesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Activities.HolidaysActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Activities.AttendanceActivity"
+            android:exported="false" />
+        <activity
             android:name=".Activities.LoginActivity"
             android:exported="false" />
         <activity

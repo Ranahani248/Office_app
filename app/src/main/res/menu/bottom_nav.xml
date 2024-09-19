@@ -4,20 +4,20 @@
     <item  android:icon="@drawable/home_icon"
         android:id="@+id/home"
         android:title=""
-        android:iconTint="@color/home_text_icons_white"
+        android:iconTint="@color/white_on_darkBlue"
         app:showAsAction="always" />
 
 
     <item  android:icon="@drawable/announcement_icon_2"
         android:id="@+id/announcement"
         android:title=""
-        android:iconTint="@color/home_text_icons_white"
+        android:iconTint="@color/white_on_darkBlue"
         app:showAsAction="always" />
 
 
     <item  android:icon="@drawable/profile_icon"
         android:id="@+id/profile"
         android:title=""
-        android:iconTint="@color/home_text_icons_white"
+        android:iconTint="@color/white_on_darkBlue"
         app:showAsAction="always" />
 </menu>

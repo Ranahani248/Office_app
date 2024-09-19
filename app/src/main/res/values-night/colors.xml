@@ -11,8 +11,11 @@
         <color name="Home_Background">#333333</color>
         <color name="home_dark">#121A52</color>
         <color name="home_card">#393939</color>
-        <color name="home_text_icons_white">#CECECE</color>
-        <color name="home_text_icons_dark_blue">#CECECE</color>
+        <color name="white_on_darkBlue">#CECECE</color>
+        <color name="darkBlue_to_white">#CECECE</color>
+        <color name="offwhite_to_grey">#222222</color>
+        <color name="text_black_to_white">#CECECE</color>
+        <color name="home_back_diff">#333333</color>
 
 
 
