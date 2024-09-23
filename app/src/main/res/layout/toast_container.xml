@@ -45,6 +45,7 @@
                     android:layout_centerVertical="true"
                     android:layout_marginStart="17dp"
                     android:ellipsize="end"
+                    android:maxLines="2"
                     android:text="This is a custom Toast"
                     android:textColor="#131313"
                     android:textSize="18sp"

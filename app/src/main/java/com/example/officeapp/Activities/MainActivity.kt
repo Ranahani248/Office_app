@@ -1,6 +1,7 @@
 package com.example.officeapp.Activities
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -11,7 +12,13 @@ import com.example.officeapp.Fragments.AnnounementsFragment
 import com.example.officeapp.Fragments.HomeFragment
 import com.example.officeapp.Fragments.ProfileFragment
 import com.example.officeapp.R
+import com.example.officeapp.Utils.ApiLinks
+import com.example.officeapp.Utils.ApiService
+import com.example.officeapp.Utils.GsonHelper
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,6 +27,17 @@ class MainActivity : AppCompatActivity() {
     lateinit var profileFragment : ProfileFragment
     lateinit var announcementFragment : AnnounementsFragment
     var bottomNavigationView : BottomNavigationView? = null
+
+    lateinit var name1 :String
+    lateinit var email1 :String
+    lateinit var designation1 :String
+    lateinit var mobile1 :String
+    lateinit var address1 :String
+    lateinit var imageUrl :String
+
+    companion object {
+        lateinit var USERID :String
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,13 +48,15 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        intent.getStringExtra("id")?.let { USERID = it }
         fragmentContainer = findViewById(R.id.fragmentContainer)
-
+        Log.d("TAG", "onCreate: $USERID")
         homeFragment = HomeFragment()
         profileFragment = ProfileFragment()
         announcementFragment = AnnounementsFragment()
         loadFragment(homeFragment)
+
+        fetchData()
 
          bottomNavigationView = findViewById(R.id.bottomNavigation)
         bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
@@ -80,7 +100,29 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
     }
 
+    fun fetchData() {
+        CoroutineScope(Dispatchers.Main).launch {
 
+
+            val profileResult = ApiService.get(ApiLinks.PROFILE_URL+"/$USERID", null)
+            if (profileResult.isSuccess) {
+                val profileData = profileResult.getOrNull()
+                GsonHelper.deserializeFromJson<Map<String, String>>(profileData!!)?.let {
+                    Log.d(this.javaClass.name, it.toString())
+                    name1 = it["name"].toString()
+                    email1 = it["email"].toString()
+                    designation1 = it["job_title"].toString()
+                    mobile1 = it["phone"].toString()
+                    address1 = it["address"].toString()
+                    imageUrl = it["image"].toString()
+                }
+            } else {
+                val error = profileResult.exceptionOrNull()
+                Log.d("Tag","Profile request failed: ${error?.message}")
+            }
+        }
+
+    }
 
 }
 

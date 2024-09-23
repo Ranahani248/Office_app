@@ -133,7 +133,7 @@ class HomeFragment : Fragment() {
                 if (locationHelper?.isLocationEnabled(requireActivity()) == true) {
                     fetchLocation()
                 } else {
-                    Toast(requireContext()).showCustomToast(requireActivity(), "Location Services are Unavailable, Please Try Again", R.color.yellow)
+                    Toast(requireContext()).showCustomToast(requireActivity(), "Location Services are Unavailable.", R.color.yellow)
                 }
             } else {
                 // User did not agree to change location settings
