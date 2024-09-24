@@ -3,6 +3,7 @@ package com.example.officeapp.Activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +15,7 @@ import com.example.officeapp.R
 import com.example.officeapp.Utils.ApiLinks
 import com.example.officeapp.Utils.ApiService
 import com.example.officeapp.Utils.GsonHelper
+import com.example.officeapp.Utils.PreferencesManager
 import com.example.officeapp.Utils.showCustomToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,8 +24,10 @@ import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
     lateinit var loginButton : AppCompatButton
-    lateinit var email : EditText
-    lateinit var password : EditText
+     var email : EditText? = null
+     var password : EditText? = null
+    private lateinit var preferencesManager: PreferencesManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -34,25 +38,44 @@ class LoginActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        preferencesManager = PreferencesManager(this)
+
 
         email = findViewById(R.id.email)
         password = findViewById(R.id.password)
         loginButton = findViewById(R.id.loginButton)
+
+        autoLogin()
+
         loginButton.setOnClickListener {
             login()
         }
     }
+    private fun autoLogin() {
+        val savedEmail = preferencesManager.getString("loginDetails", "userEmail")
+        val savedPassword = preferencesManager.getString("loginDetails", "password")
+
+        // Check if saved credentials exist
+        if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
+            Log.d("TAG", "Saved credentials: $savedEmail, $savedPassword")
+            email?.setText(savedEmail)
+            password?.setText(savedPassword)
+            login()
+        }
+    }
+
     fun login() {
         // Check if email or password is empty
-        if (email.text.toString().isEmpty() || password.text.toString().isEmpty()) {
+        if (email?.text.toString().isEmpty() || password?.text.toString().isEmpty()) {
             Toast(this).showCustomToast(this, "Please enter email and password", R.color.yellow)
             return
         }
 
         val parameters: Map<String, String> = mapOf(
-            "email" to email.text.toString(),
-            "password" to password.text.toString()
+            "email" to email?.text.toString(),
+            "password" to password?.text.toString()
         )
+        Log.d("TAG", "login: $parameters")
         val activity = this
         // Use CoroutineScope to launch the network call
         CoroutineScope(Dispatchers.Main).launch {
@@ -79,12 +102,17 @@ class LoginActivity : AppCompatActivity() {
                     }
                 }
 
+
+                preferencesManager.saveString("loginDetails", "userEmail", email?.text.toString())
+                preferencesManager.saveString("loginDetails", "password", password?.text.toString())
+
                 val intent = Intent(activity, MainActivity::class.java)
                 intent.putExtra("id", USERID)
                 startActivity(intent)
             }.onFailure { error ->
                 // Update UI on the Main thread
                 Toast(activity).showCustomToast(activity, "Login Failed $error", R.color.red)
+                Log.d("Login Failed", error.toString())
             }
         }
     }

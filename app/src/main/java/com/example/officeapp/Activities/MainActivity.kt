@@ -28,12 +28,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var announcementFragment : AnnounementsFragment
     var bottomNavigationView : BottomNavigationView? = null
 
-    lateinit var name1 :String
-    lateinit var email1 :String
-    lateinit var designation1 :String
-    lateinit var mobile1 :String
-    lateinit var address1 :String
-    lateinit var imageUrl :String
+     var name1 :String = ""
+     var email1 :String = ""
+     var designation1 :String = ""
+     var mobile1 :String = ""
+     var address1 :String = ""
+     var imageUrl :String  = ""
 
     companion object {
         lateinit var USERID :String
@@ -48,6 +48,7 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         intent.getStringExtra("id")?.let { USERID = it }
         fragmentContainer = findViewById(R.id.fragmentContainer)
         Log.d("TAG", "onCreate: $USERID")
@@ -114,7 +115,13 @@ class MainActivity : AppCompatActivity() {
                     designation1 = it["job_title"].toString()
                     mobile1 = it["phone"].toString()
                     address1 = it["address"].toString()
-                    imageUrl = it["image"].toString()
+                    val image = it["image"].toString()
+                    if (image.isNotEmpty() && image != "null") {
+                        imageUrl = it["image"].toString()
+                    }
+                    if ( profileFragment.isAdded) {
+                        profileFragment.updateData()
+                    }
                 }
             } else {
                 val error = profileResult.exceptionOrNull()
