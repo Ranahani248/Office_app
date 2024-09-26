@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.jar.Attributes.Name
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,7 +28,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var profileFragment : ProfileFragment
     lateinit var announcementFragment : AnnounementsFragment
     var bottomNavigationView : BottomNavigationView? = null
-
+    var fetching : Boolean = false
      var name1 :String = ""
      var email1 :String = ""
      var designation1 :String = ""
@@ -36,7 +37,8 @@ class MainActivity : AppCompatActivity() {
      var imageUrl :String  = ""
 
     companion object {
-        lateinit var USERID :String
+         var USERID :String = ""
+        var NAME:String = ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,6 +74,8 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.profile -> {
                     loadFragment(profileFragment)
+                    if(!fetching){
+                    fetchData()}
                     true
                 }
                 else -> false
@@ -102,6 +106,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun fetchData() {
+        fetching = true
+        if(USERID == ""){
+            return
+        }
+
+
+
         CoroutineScope(Dispatchers.Main).launch {
 
 
@@ -116,15 +127,20 @@ class MainActivity : AppCompatActivity() {
                     mobile1 = it["phone"].toString()
                     address1 = it["address"].toString()
                     val image = it["image"].toString()
+                    fetching = false
+
                     if (image.isNotEmpty() && image != "null") {
                         imageUrl = it["image"].toString()
                     }
                     if ( profileFragment.isAdded) {
                         profileFragment.updateData()
+                        profileFragment.imageUri = null
                     }
                 }
             } else {
                 val error = profileResult.exceptionOrNull()
+                fetching = false
+
                 Log.d("Tag","Profile request failed: ${error?.message}")
             }
         }

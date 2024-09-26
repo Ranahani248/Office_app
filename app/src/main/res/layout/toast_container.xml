@@ -47,7 +47,7 @@
                     android:ellipsize="end"
                     android:maxLines="2"
                     android:text="This is a custom Toast"
-                    android:textColor="#131313"
+                    android:textColor="@color/text_black_to_white"
                     android:textSize="18sp"
                     android:textStyle="bold" />
 

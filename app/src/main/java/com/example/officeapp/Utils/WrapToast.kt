@@ -17,7 +17,9 @@ import com.example.officeapp.R
 
         // set the text of the TextView of the message
         val textView = layout.findViewById<TextView>(R.id.toast_text)
+
         textView.text = message
+
 
         val button_accent_border = layout.findViewById<FrameLayout>(R.id.button_accent_border)
         button_accent_border.setBackgroundResource(color)

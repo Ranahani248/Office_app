@@ -72,10 +72,12 @@ class LocationHelper(private val context: Context) {
                 if (exception is ResolvableApiException
                 ) {
                     Log.d("TAG", "location settings are not satisfied")
+                    val activity : MainActivity = context as MainActivity
+
+                    Toast(context).showCustomToast(activity , "Failed to fetch location. Please Retry", R.color.green)
                     try {
 
                         if(isLocationEnabled(context)){
-                            val activity : MainActivity = context as MainActivity
                             Toast(context).showCustomToast(activity, "Turn Off Mocked Location And retry", R.color.red)
                         }
                         else{

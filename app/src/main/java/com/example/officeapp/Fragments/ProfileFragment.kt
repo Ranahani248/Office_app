@@ -8,6 +8,8 @@ import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -48,6 +50,10 @@ class ProfileFragment : Fragment() {
     lateinit var nameEditText: EditText
     lateinit var image: CircleImageView
      var imageUri : Uri? = null
+    var progresslayout : androidx.constraintlayout.widget.ConstraintLayout? = null
+    var loadingText : TextView? = null
+    var handler: Handler? = null
+    var dotCount = 0
     lateinit var updateButton : AppCompatButton
 
     private val PERMISSION_REQUEST_CODE = 101
@@ -80,17 +86,17 @@ class ProfileFragment : Fragment() {
         address = view.findViewById(R.id.addressEditText)
         nameEditText = view.findViewById(R.id.nameEditText)
         updateButton = view.findViewById(R.id.updateButton)
-
+        progresslayout = view.findViewById(R.id.progresslayout)
+        loadingText = view.findViewById(R.id.loadingText)
 
         updateData()
 
-        activity1 = requireActivity() as MainActivity
 
+        activity1 = requireActivity() as MainActivity
         permissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestPermission()
         ) { isGranted ->
             if (isGranted) {
-                // Permission granted, open image picker
                 openImagePicker()
             } else {
                 Toast(requireContext()).showCustomToast(requireActivity(), "Permission Denied", R.color.yellow)
@@ -186,8 +192,6 @@ class ProfileFragment : Fragment() {
 
 
 
-
-
     private fun openImagePicker() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             // Use the Photo Picker for Android 14 and above to select a single image
@@ -216,36 +220,43 @@ class ProfileFragment : Fragment() {
             )
             return
         }
+        progress(true)
         val headers = mutableMapOf<String, String>()
-
+        headers["Authorization"] = "123"
 //        headers["User-Agent"] = "PostmanRuntime/7.42.0"
 //        headers["Accept"] = "*/*"
 //        headers["access-control-allow-origin"] = "*"
-        val parameters = mutableMapOf<String, Any>()
+        val parameters = mutableMapOf<String, String>()
 
         parameters["name"] = nameEditText.text.toString()
         parameters["phone"] = mobile.text.toString()
         parameters["address"] = address.text.toString()
-
+        var imageFile : File? = null
         if (imageUri != null) {
-            val imageFile = uriToFile(requireContext(), imageUri!!)
-            if (imageFile != null) {
-                parameters["image"] = imageFile
+            val filepath = getPathFromUri(imageUri!!)
+            val imageFile1 = filepath?.let { File(it) }
+
+            if (imageFile1 != null && imageFile1.exists()) {
+                imageFile = imageFile1 // Pass the File object, not the file path
             } else {
-                Log.e("Image Upload", "Failed to convert URI to file")
+                Log.d("File Does not exist", "File not found")
             }
         }
 
 
+
         Log.d("Tag", parameters.toString())
 
-
+        if(MainActivity.USERID == ""){
+            progress(false)
+            return
+        }
         val activity = requireActivity()
         // Use CoroutineScope to launch the network call
         CoroutineScope(Dispatchers.Main).launch {
             // Perform the network request on IO dispatcher
             val response = withContext(Dispatchers.IO) {
-                ApiService.post(ApiLinks.PROFILE_URL + "/${MainActivity.USERID}", headers, parameters)
+                ApiService.postMultiPart(ApiLinks.PROFILE_URL + "/${MainActivity.USERID}", headers, parameters,imageFile,"image")
             }
 
             // Handle the response
@@ -257,24 +268,51 @@ class ProfileFragment : Fragment() {
                     R.color.green
                 )
                 activity1.fetchData()
+                if(activity1.homeFragment.isAdded){
+                    activity1.homeFragment.NAME?.text  = nameEditText.text.toString()
+                }
+                if(activity1.announcementFragment.isAdded){
+                    activity1.announcementFragment.NAME?.text  = nameEditText.text.toString()
+                }
+                MainActivity.NAME = nameEditText.text.toString()
+
+                progress(false)
+
 
             }.onFailure { error ->
                 // Update UI on the Main thread
                 Toast(activity).showCustomToast(activity, "Profile Update Failed $error", R.color.red)
                 Log.d("Tag", "Profile request failed: $error")
+                progress(false)
+
             }
         }
     }
-    fun uriToFile(context: Context, uri: Uri): File? {
-        val contentResolver = context.contentResolver
-        val file = File(context.cacheDir, "temp_image_file.png") // Change the file name and extension as needed
-        contentResolver.openInputStream(uri)?.use { inputStream ->
-            FileOutputStream(file).use { outputStream ->
-                inputStream.copyTo(outputStream)
+    private fun getPathFromUri(uri: Uri): String? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // For Android 10 (API 29) and above, use a stream to handle the file
+            requireActivity().contentResolver.openInputStream(uri)?.use { inputStream ->
+                val file = File(requireActivity().cacheDir, "temp_image_file")
+                file.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+                file.absolutePath
             }
+        } else {
+            // For Android 9 and below, use the traditional way of getting file path
+            val projection = arrayOf(MediaStore.Images.Media.DATA)
+            val cursor = requireActivity().contentResolver.query(uri, projection, null, null, null)
+            cursor?.use {
+                if (cursor.moveToFirst()) {
+                    val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+                    return it.getString(columnIndex)
+                }
+            }
+            null
         }
-        return file
     }
+
+
 
     fun updateData(){
         activity1 = activity as MainActivity
@@ -299,6 +337,26 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    fun progress(progress: Boolean) {
+        if (progress) {
+            progresslayout?.visibility = android.view.View.VISIBLE
 
+            // Create a handler for updating text
+            handler = Handler(Looper.getMainLooper())
+            handler?.post(object : Runnable {
+                override fun run() {
+                    val dots = ".".repeat(dotCount % 4) // Add up to 3 dots
+                    loadingText?.text = "Updating$dots"
+                    dotCount++
+                    if (progress) {
+                        handler?.postDelayed(this, 500L) // Update every 500ms
+                    }
+                }
+            })
+        } else {
+            progresslayout?.visibility = android.view.View.GONE
+            handler?.removeCallbacksAndMessages(null)
+        }
+    }
 
 }
