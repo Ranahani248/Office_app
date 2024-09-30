@@ -8,6 +8,10 @@ class ApiLinks {
 
         const val LOGIN_URL = BASE_URL + "api/v1/employee/login"
         const val PROFILE_URL = BASE_URL + "api/v1/employee/profile"
-        const val ATTENDANCE_URL = BASE_URL + "api/v1/employee/attendance"
+        const val ATTENDANCE_STATUS_URL = BASE_URL + "api/v1/employee/attendance"
+        const val ATTENDANCE_IN_URL = BASE_URL + "api/v1/employee/attendance/in"
+        const val ATTENDANCE_OUT_URL = BASE_URL + "api/v1/employee/attendance/off"
+        const val APPLY_LEAVAES_URL = BASE_URL + "api/v1/employee/attendance/leave"
+
     }
 }

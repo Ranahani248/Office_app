@@ -56,6 +56,16 @@
                 app:cardElevation="6dp"
                 app:cardCornerRadius="10dp"
                 >
+                <TextView
+                    android:id="@+id/checkInTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:text="TIME"
+                    android:visibility="gone"
+                    android:layout_gravity="center_horizontal"
+                    android:textColor="@color/text_black_to_white"
+                    />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/fetch"

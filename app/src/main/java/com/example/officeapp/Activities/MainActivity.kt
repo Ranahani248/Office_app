@@ -2,6 +2,7 @@ package com.example.officeapp.Activities
 
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -23,22 +24,25 @@ import java.util.jar.Attributes.Name
 
 class MainActivity : AppCompatActivity() {
 
-    var fragmentContainer : FrameLayout? = null
-    lateinit var homeFragment : HomeFragment
-    lateinit var profileFragment : ProfileFragment
-    lateinit var announcementFragment : AnnounementsFragment
-    var bottomNavigationView : BottomNavigationView? = null
-    var fetching : Boolean = false
-     var name1 :String = ""
-     var email1 :String = ""
-     var designation1 :String = ""
-     var mobile1 :String = ""
-     var address1 :String = ""
-     var imageUrl :String  = ""
+    var fragmentContainer: FrameLayout? = null
+    lateinit var homeFragment: HomeFragment
+    lateinit var profileFragment: ProfileFragment
+    lateinit var announcementFragment: AnnounementsFragment
+    var bottomNavigationView: BottomNavigationView? = null
+    var fetching: Boolean = false
+    var checkingStatus :Boolean = false
+    var name1: String = ""
+    var email1: String = ""
+    var designation1: String = ""
+    var mobile1: String = ""
+    var address1: String = ""
+    var imageUrl: String = ""
+
 
     companion object {
-         var USERID :String = ""
-        var NAME:String = ""
+        var NAME: String = ""
+        var isIN: Boolean = false
+        var token :String = ""
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,33 +55,38 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        intent.getStringExtra("id")?.let { USERID = it }
         fragmentContainer = findViewById(R.id.fragmentContainer)
-        Log.d("TAG", "onCreate: $USERID")
         homeFragment = HomeFragment()
         profileFragment = ProfileFragment()
         announcementFragment = AnnounementsFragment()
         loadFragment(homeFragment)
-
+        checkAttendanceStatus()
         fetchData()
 
-         bottomNavigationView = findViewById(R.id.bottomNavigation)
+        bottomNavigationView = findViewById(R.id.bottomNavigation)
         bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
                     loadFragment(homeFragment)
+                    checkAttendanceStatus()
                     true
                 }
+
                 R.id.announcement -> {
                     loadFragment(announcementFragment)
+                    checkAttendanceStatus()
                     true
                 }
+
                 R.id.profile -> {
                     loadFragment(profileFragment)
-                    if(!fetching){
-                    fetchData()}
+                    checkAttendanceStatus()
+                    if (!fetching) {
+                        fetchData()
+                    }
                     true
                 }
+
                 else -> false
             }
         }
@@ -107,16 +116,14 @@ class MainActivity : AppCompatActivity() {
 
     fun fetchData() {
         fetching = true
-        if(USERID == ""){
-            return
-        }
+
 
 
 
         CoroutineScope(Dispatchers.Main).launch {
 
 
-            val profileResult = ApiService.get(ApiLinks.PROFILE_URL+"/$USERID", null)
+            val profileResult = ApiService.get(ApiLinks.PROFILE_URL , null)
             if (profileResult.isSuccess) {
                 val profileData = profileResult.getOrNull()
                 GsonHelper.deserializeFromJson<Map<String, String>>(profileData!!)?.let {
@@ -132,7 +139,7 @@ class MainActivity : AppCompatActivity() {
                     if (image.isNotEmpty() && image != "null") {
                         imageUrl = it["image"].toString()
                     }
-                    if ( profileFragment.isAdded) {
+                    if (profileFragment.isAdded) {
                         profileFragment.updateData()
                         profileFragment.imageUri = null
                     }
@@ -141,11 +148,64 @@ class MainActivity : AppCompatActivity() {
                 val error = profileResult.exceptionOrNull()
                 fetching = false
 
-                Log.d("Tag","Profile request failed: ${error?.message}")
+                Log.d("Tag", "Profile request failed: ${error?.message}")
             }
         }
-
     }
 
+    fun checkAttendanceStatus() {
+        if(!checkingStatus) {
+            checkingStatus = true
+            CoroutineScope(Dispatchers.Main).launch {
+
+                val attendanceResult =
+                    ApiService.get(ApiLinks.ATTENDANCE_STATUS_URL , null)
+                if (attendanceResult.isSuccess) {
+                    val attendanceData = attendanceResult.getOrNull()
+                    GsonHelper.deserializeFromJson<Map<String, String>>(attendanceData!!)?.let {
+                        Log.d(this.javaClass.name, it.toString())
+                        if (it["attendance"].toString() == "present") {
+                            if(it["off_at"] == null || it["off_at"] == "null" || it["off_at"] == "") {
+                                isIN = true
+                                if (homeFragment.isAdded) {
+                                    homeFragment.checkIN_OUT?.text = "CHECK OUT"
+                                    homeFragment.checkInTime?.visibility = View.VISIBLE
+                                    homeFragment.checkInTime?.text = "CHECK IN TIME: ${it["on_at"]}"
+                                    homeFragment.checkIN_OUT?.isEnabled = true
+
+                                }
+                            }
+                            else{
+                                isIN = false
+                                if (homeFragment.isAdded) {
+                                    homeFragment.checkIN_OUT?.text = "CHECKED OUT"
+                                    homeFragment.checkInTime?.visibility = View.VISIBLE
+                                    homeFragment.checkInTime?.text = "CHECK OUT TIME: ${it["off_at"]}"
+                                    homeFragment.checkIN_OUT?.isEnabled = false
+                                }
+                            }
+                        } else {
+                            isIN = false
+                            if (homeFragment.isAdded) {
+                                homeFragment.checkInTime?.visibility = View.GONE
+                                homeFragment.checkIN_OUT?.isEnabled = true
+                                homeFragment.checkIN_OUT?.text = "CHECK IN"
+                            }
+
+                        }
+                        checkingStatus = false
+
+                    }
+                } else {
+                    Log.d(
+                        "Tag",
+                        "Attendance request failed: ${attendanceResult.exceptionOrNull()?.message}"
+                    )
+                    checkingStatus = false
+
+                }
+            }
+        }
+    }
 }
 

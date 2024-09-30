@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.officeapp.Activities.AttendanceActivity
 import com.example.officeapp.Activities.HolidaysActivity
+import com.example.officeapp.Activities.LeavesActivity
 import com.example.officeapp.Activities.MainActivity
 import com.example.officeapp.R
 import com.example.officeapp.Utils.ApiLinks
@@ -29,6 +30,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
+import java.io.IOException
 import java.util.*
 
 class HomeFragment : Fragment() {
@@ -50,8 +53,9 @@ class HomeFragment : Fragment() {
     var loadingText : TextView? = null
     var handler: Handler? = null
     var dotCount = 0
+    var checkInTime: TextView? = null
 
-    private var fetch: Button? = null
+    var checkIN_OUT: Button? = null
     private var welcome: TextView? = null
 
     override fun onCreateView(
@@ -71,7 +75,7 @@ class HomeFragment : Fragment() {
             insets
         }
 
-        fetch = view.findViewById(R.id.fetch)
+        checkIN_OUT = view.findViewById(R.id.fetch)
         welcome = view.findViewById(R.id.welcome)
         attendanceButton = view.findViewById(R.id.attendanceButton)
         announcementButton = view.findViewById(R.id.announcementButton)
@@ -80,7 +84,11 @@ class HomeFragment : Fragment() {
         holidaysButton = view.findViewById(R.id.HolidaysButton)
         leavesButton = view.findViewById(R.id.leavesButton)
         NAME = view.findViewById(R.id.NAME)
+        checkInTime = view.findViewById(R.id.checkInTime)
 
+
+        var mainactivity = requireActivity() as MainActivity
+        mainactivity.checkAttendanceStatus()
 
         NAME?.text = MainActivity.NAME
         val calendar = Calendar.getInstance()
@@ -108,7 +116,7 @@ class HomeFragment : Fragment() {
             startActivity(intent)
         }
         leavesButton?.setOnClickListener {
-            val intent = Intent(requireContext(), HolidaysActivity::class.java)
+            val intent = Intent(requireContext(), LeavesActivity::class.java)
             startActivity(intent)
         }
 
@@ -118,7 +126,7 @@ class HomeFragment : Fragment() {
         locationHelper = LocationHelper(requireActivity())
 
         // Handle button click
-        fetch?.setOnClickListener {
+        checkIN_OUT?.setOnClickListener {
             fetchLocation()
         }
     }
@@ -159,26 +167,41 @@ class HomeFragment : Fragment() {
             "latitude" to latitude.toString()
         )
         Log.d("Tag","$longitude   $latitude")
-        if(MainActivity.USERID == ""){
-            progress(false)
-            return
+
+        var Link = ApiLinks.ATTENDANCE_IN_URL
+        if(MainActivity.isIN){
+            Link = ApiLinks.ATTENDANCE_OUT_URL
         }
+        Log.d("Tag","$Link")
+
         CoroutineScope(Dispatchers.Main).launch {
             val response = withContext(Dispatchers.IO) {
-                ApiService.post(ApiLinks.ATTENDANCE_URL +"/${MainActivity.USERID}", null, parameters)
+                ApiService.post(Link , null, parameters)
             }
 
 
             // Handle the response
             response.onSuccess { responseString ->
                 Toast(requireContext()).showCustomToast(requireActivity(),"Checked IN Successfully",R.color.green)
+                val mainActivity: MainActivity = requireActivity() as MainActivity
+                mainActivity.checkAttendanceStatus()
                 Log.d("success",responseString)
                 progress(false)
             }.onFailure { error ->
-                Toast(requireContext()).showCustomToast(requireActivity(),"Checked IN Failed",R.color.red)
-                Log.d("response", error.toString())
+                val errorMessage = try {
+                    val errorBody = (error as IOException).message
+                    if (errorBody != null) {
+                        GsonHelper.deserializeFromJson<Map<String, Any>>(errorBody)?.get("message")
+                    } else {
+                        "Check in failed"
+                    }
+                } catch (e: Exception) {
+                    "Check in failed "
+                }
+                Toast(requireContext()).showCustomToast(requireActivity(),
+                    errorMessage.toString(), R.color.red)
+                Log.d("response", "Check-in failed: $errorMessage")
                 progress(false)
-
             }
         }
 
@@ -209,7 +232,12 @@ class HomeFragment : Fragment() {
             handler?.post(object : Runnable {
                 override fun run() {
                     val dots = ".".repeat(dotCount % 4) // Add up to 3 dots
-                    loadingText?.text = "Checking in$dots"
+                    if(!MainActivity.isIN) {
+                        loadingText?.text = "Checking in$dots"
+                    }
+                    else{
+                        loadingText?.text = "Checking out$dots"
+                    }
                     dotCount++
                     if (progress) {
                         handler?.postDelayed(this, 500L) // Update every 500ms

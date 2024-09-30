@@ -2,6 +2,7 @@ package com.example.officeapp.Utils
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.example.officeapp.Activities.MainActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -30,6 +31,7 @@ class ApiService {
             headers: Map<String, String>? = null
         ): Result<String> = withContext(Dispatchers.IO) {
             val requestBuilder = Request.Builder().url(url)
+            requestBuilder.addHeader("Authorization", "Bearer " + MainActivity.token)
 
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
 
@@ -87,22 +89,30 @@ class ApiService {
                 .url(url)
                 .post(multipartBody)
 
+
+
+            requestBuilder.addHeader("Authorization", "Bearer ${MainActivity.token}" )
+            Log.d("Request", "autorization:  Bearer ${MainActivity.token}" )
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
 
             Log.d("Request", "URL: $url")
+
             headers?.forEach { (key, value) -> Log.d("Header", "$key: $value") }
 
 
 
             val request = requestBuilder.build()
+
             try {
                 val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
+                return@withContext if (response.isSuccessful) {
                     Result.success(response.body?.string() ?: "Empty response")
                 } else {
-                    Result.failure(IOException("Error: ${response.code}"))
+                    val errorBody = response.body?.string() ?: "No error details"
+                    Result.failure(IOException(errorBody))
                 }
             } catch (e: Exception) {
+                Log.d("Tag", "Exception: ${e.message}")
                 Result.failure(e)
             }
         }
@@ -117,10 +127,13 @@ class ApiService {
         ): Result<String> = withContext(Dispatchers.IO) {
             val multipartBodyBuilder = MultipartBody.Builder().setType(MultipartBody.FORM)
 
+
+
             // Add form data parameters
             parameters.forEach { (key, value) ->
                 multipartBodyBuilder.addFormDataPart(key, value)
             }
+
 
             // Add image if provided and compress it
             if (image != null) {
@@ -134,8 +147,10 @@ class ApiService {
             val requestBuilder = Request.Builder()
                 .url(url)
                 .post(multipartBody)
-
+            requestBuilder.addHeader("Authorization", "Bearer " + MainActivity.token)
+            Log.d("Tag", "token : ${MainActivity.token}")
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
+
 
             val request = requestBuilder.build()
             try {
@@ -193,6 +208,7 @@ class ApiService {
             val requestBuilder = Request.Builder()
                 .url(url)
                 .put(formBody)
+            requestBuilder.addHeader("Authorization", "Bearer " + MainActivity.token)
 
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
 
@@ -217,6 +233,7 @@ class ApiService {
             val requestBuilder = Request.Builder()
                 .url(url)
                 .delete()
+            requestBuilder.addHeader("Authorization", "Bearer " + MainActivity.token)
 
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
 

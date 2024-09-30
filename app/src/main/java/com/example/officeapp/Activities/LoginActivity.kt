@@ -62,13 +62,19 @@ class LoginActivity : AppCompatActivity() {
     private fun autoLogin() {
         val savedEmail = preferencesManager.getString("loginDetails", "userEmail")
         val savedPassword = preferencesManager.getString("loginDetails", "password")
+        val token = preferencesManager.getString("loginDetails", "token")
+        val name = preferencesManager.getString("loginDetails", "name")
 
         // Check if saved credentials exist
-        if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty()) {
+        if (!savedEmail.isNullOrEmpty() && !savedPassword.isNullOrEmpty() && !token.isNullOrEmpty() && !name.isNullOrEmpty()) {
             Log.d("TAG", "Saved credentials: $savedEmail, $savedPassword")
             email?.setText(savedEmail)
             password?.setText(savedPassword)
-            login()
+            val intent = Intent(this, MainActivity::class.java)
+            MainActivity.NAME = name
+            MainActivity.token = token
+            startActivity(intent)
+
         }
     }
     fun progress(progress: Boolean) {
@@ -121,25 +127,22 @@ class LoginActivity : AppCompatActivity() {
                     "Login Successful",
                     R.color.green
                 )
-                 var USERID:String = ""
                 var NAME:String = ""
+                var token = ""
                 GsonHelper.deserializeFromJson<Map<String, Any>>(responseString)?.let {
-                    val id = it["id"]
-                    USERID = if (id is Double) {
-                        id.toInt().toString()  // Convert Double to Int and then to String
-                    } else {
-                        id.toString()  // For other types, use the toString() method
-                    }
                      NAME = it["name"].toString()
+                    token   = it["token"].toString()
                 }
                 progress(false)
 
                 preferencesManager.saveString("loginDetails", "userEmail", email?.text.toString())
                 preferencesManager.saveString("loginDetails", "password", password?.text.toString())
+                preferencesManager.saveString("loginDetails", "name", NAME)
+                preferencesManager.saveString("loginDetails", "token", token)
 
                 val intent = Intent(activity, MainActivity::class.java)
-                intent.putExtra("id", USERID)
                 MainActivity.NAME = NAME
+                MainActivity.token = token
                 startActivity(intent)
                 finish()
             }.onFailure { error ->

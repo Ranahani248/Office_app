@@ -247,16 +247,13 @@ class ProfileFragment : Fragment() {
 
         Log.d("Tag", parameters.toString())
 
-        if(MainActivity.USERID == ""){
-            progress(false)
-            return
-        }
+
         val activity = requireActivity()
         // Use CoroutineScope to launch the network call
         CoroutineScope(Dispatchers.Main).launch {
             // Perform the network request on IO dispatcher
             val response = withContext(Dispatchers.IO) {
-                ApiService.postMultiPart(ApiLinks.PROFILE_URL + "/${MainActivity.USERID}", headers, parameters,imageFile,"image")
+                ApiService.postMultiPart(ApiLinks.PROFILE_URL , headers, parameters,imageFile,"image")
             }
 
             // Handle the response
