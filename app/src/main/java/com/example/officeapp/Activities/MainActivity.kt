@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -54,7 +55,11 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
 
+            }
+        })
         fragmentContainer = findViewById(R.id.fragmentContainer)
         homeFragment = HomeFragment()
         profileFragment = ProfileFragment()
@@ -64,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         fetchData()
 
         bottomNavigationView = findViewById(R.id.bottomNavigation)
+
         bottomNavigationView?.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> {
@@ -74,6 +80,9 @@ class MainActivity : AppCompatActivity() {
 
                 R.id.announcement -> {
                     loadFragment(announcementFragment)
+                    if(announcementFragment.isAdded){
+                    announcementFragment.announcementList()
+                        }
                     checkAttendanceStatus()
                     true
                 }
@@ -207,5 +216,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }
 

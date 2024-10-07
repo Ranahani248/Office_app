@@ -69,6 +69,7 @@
             app:layout_constraintTop_toBottomOf="@+id/text" />
 
         <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/holidayRecycler"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -77,6 +78,20 @@
             app:spanCount="2"
             tools:listitem="@layout/holidays_recycler_holder"
             app:layout_constraintTop_toBottomOf="@+id/view" />
+
+        <TextView
+            android:id="@+id/noHoliday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Upcoming Holidays"
+            android:textColor="@color/text_black_to_white"
+            android:textSize="25sp"
+            android:visibility="gone"
+            android:layout_marginTop="180dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/view"
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
